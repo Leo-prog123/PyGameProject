@@ -5,7 +5,7 @@ import sys
 import time
 
 pygame.init()
-size = width, height = 910, 800
+size = width, height = 900, 800
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 enemy_sprites = pygame.sprite.Group()
@@ -85,8 +85,6 @@ class Enemy(pygame.sprite.Sprite):
         if self.now - self.start >= 1.7:
             EnemyWeapon(self.rect.left + self.rect.width / 2, self.rect.bottom)
             self.start = self.now
-
-
 
 
 class Enemy2(Enemy):
@@ -246,8 +244,9 @@ while running:
     if k_w and mc.rect.top >= 0:
         mc.rect.y -= 1
     all_sprites.update()
-    clock.tick(200)
-    screen.fill((0, 0, 0))
+    clock.tick(300)
+    background = pygame.transform.scale(load_image('background.jpg'), (800, 800))
+    screen.blit(background, (100, 0))
     pygame.draw.rect(screen, (192, 192, 192), rect=(0, 0, 100, 800))
     all_sprites.draw(screen)
     enemy_sprites.draw(screen)
@@ -256,6 +255,7 @@ while running:
     frame += 1
     screen.blit(text1, (15, 50))
     screen.blit(text2, (35, 80))
+
     pygame.display.flip()
 
 pygame.quit()
