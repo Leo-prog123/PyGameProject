@@ -8,6 +8,7 @@ pygame.init()
 size = width, height = 900, 800
 screen = pygame.display.set_mode(size)
 score = 0
+durability = 100
 
 
 def load_image(name, colorkey=None):
@@ -31,16 +32,20 @@ class MainCharacter(pygame.sprite.Sprite):
     image = load_image("mc_image.png", -1)
     image = pygame.transform.scale(image, (100, 100))
 
-    def __init__(self, all_sprites, mc_image):
+    def __init__(self, all_sprites, mc_image, x=500, y=700):
+        global durability
+        global score
+        durability = 100
+        score = 0
         super().__init__(all_sprites)
+        self.alive = True
         image = load_image(mc_image, -1)
         image = pygame.transform.scale(image, (100, 100))
         self.image = image
-        self.alive = True
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = 500
-        self.rect.y = 700
+        self.rect.x = x
+        self.rect.y = y
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -75,18 +80,30 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.x = pos[0]
             self.rect.y = pos[1]
 
-    def update(self, mc, all_sprites):
+    def update(self, mc, all_sprites, level):
+        global durability
+        global score
         if self.explos:
             self.image = Enemy.image_exp
             self.alive = False
             now_ex = time.time()
             if now_ex - self.start_ex >= 0.065:
                 self.rect.x = -100
-        if pygame.sprite.collide_mask(self, mc) or self.rect.bottom >= 800:
+                self.rect.y = 500
+        if pygame.sprite.collide_mask(self, mc):
+            if level == 1:
+                durability -= 25
+            elif level == 2:
+                durability -= 50
+            else:
+                durability = 0
             self.explos = True
-            mc.alive = False
-            mc.rect.x = 1000
-            mc.rect.y = -100
+        if self.rect.bottom >= 800:
+            if level == 2:
+                score -= 1
+            elif level == 3:
+                mc.alive = False
+            self.explos = True
         if self.alive:
             self.rect = self.rect.move(0, 1)
             self.now = time.time()
@@ -150,11 +167,15 @@ class EnemyWeapon(pygame.sprite.Sprite):
         self.rect.y = y
         self.alive = True
 
-    def update(self, mc, all_sprites, enemy_list, enemy_sprites):
+    def update(self, mc, all_sprites, enemy_list, enemy_sprites, level):
+        global durability
         if pygame.sprite.collide_mask(self, mc):
-            mc.alive = False
-            mc.rect.x = 1000
-            mc.rect.y = -100
+            if level == 1:
+                durability -= 25
+            elif level == 2:
+                durability -= 50
+            else:
+                durability = 0
             self.rect.x = 1000
             self.rect.y = 1000
             self.alive = False
@@ -175,7 +196,7 @@ class MainWeapon(pygame.sprite.Sprite):
         self.rect.y = y
         self.alive = True
 
-    def update(self, mc, all_sprites, enemy_list, enemy_sprites):
+    def update(self, mc, all_sprites, enemy_list, enemy_sprites, level):
         global score
         for i in enemy_list:
             if pygame.sprite.collide_mask(self, i):
@@ -201,6 +222,10 @@ class MainWeapon(pygame.sprite.Sprite):
 
 def show_score():
     return score
+
+
+def show_durability():
+    return durability
 
 
 def terminate():

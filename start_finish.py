@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import sqlite3
 import time
 
 
@@ -21,22 +22,25 @@ def load_image(name, colorkey=None):
     return image
 
 
-def design(intro_text, width, height, screen):
-    y = 10
+def design(intro_text, width, height, screen, level):
+    y = 40
     fon = pygame.transform.scale(load_image('background.jpg'), (width, height))
     skin1 = pygame.transform.scale(load_image('mc_image.png', -1), (200, 200))
     skin2 = pygame.transform.scale(load_image('mc_image2.png', -1), (200, 200))
     skin3 = pygame.transform.scale(load_image('mc_image3.png', -1), (200, 200))
     screen.blit(fon, (0, 0))
-    screen.blit(skin1, (100, 380))
-    screen.blit(skin2, (350, 380))
-    screen.blit(skin3, (600, 380))
+    screen.blit(skin1, (100, 280))
+    screen.blit(skin2, (350, 280))
+    screen.blit(skin3, (600, 280))
     font = pygame.font.Font(None, 50)
     text_coord = 50
     pygame.draw.rect(screen, (180, 180, 180), rect=(385, 650, 140, 50))
     f = pygame.font.Font(None, 36)
+    f_blast_zone = pygame.font.Font(None, 65)
     text = f.render('НАЧАТЬ', True, (250, 0, 250))
     screen.blit(text, (405, 665))
+    blast_zone = f_blast_zone.render('BLAST ZONE', True, (250, 30, 130))
+    screen.blit(blast_zone, (300, 30))
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color((250, 100, 200)))
         intro_rect = string_rendered.get_rect()
@@ -47,20 +51,39 @@ def design(intro_text, width, height, screen):
         intro_rect.y = y
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
+    screen.blit(font.render('Выберите уровень сложности', True, (250, 100, 200)), (200, 500))
+    pygame.draw.rect(screen, (180, 180, 180), rect=(170, 570, 140, 40))
+    pygame.draw.rect(screen, (180, 180, 180), rect=(370, 570, 170, 40))
+    pygame.draw.rect(screen, (180, 180, 180), rect=(590, 570, 170, 40))
+    screen.blit(f.render('Легко', True, (250, 0, 200)), (205, 580))
+    screen.blit(f.render('Нормально', True, (250, 0, 200)), (390, 580))
+    screen.blit(f.render('Тяжело', True, (250, 0, 200)), (630, 580))
+    if level == 1:
+        pygame.draw.rect(screen, (100, 100, 100), rect=(170, 570, 140, 40))
+        screen.blit(f.render('Легко', True, (250, 0, 200)), (205, 580))
+    elif level == 2:
+        pygame.draw.rect(screen, (100, 100, 100), rect=(370, 570, 170, 40))
+        screen.blit(f.render('Нормально', True, (250, 0, 200)), (390, 580))
+    elif level == 3:
+        pygame.draw.rect(screen, (100, 100, 100), rect=(590, 570, 170, 40))
+        screen.blit(f.render('Тяжело', True, (250, 0, 200)), (630, 580))
+    elif level == 0:
+        screen.blit(font.render('Выберите уровень сложности', True, (250, 0, 0)), (200, 500))
 
 
 def start_screen(width, height, screen):
-    intro_text = ["                                     Blast Zone", "",
-                  "Сбивай вражеские космолёты и зарабатывай очки",
+    f = pygame.font.Font(None, 36)
+    intro_text = ["Сбивай вражеские космолёты и зарабатывай очки",
                   "    Не дай им тебя сбить или дойти до края поля",
                   "                                 Приятной игры", "",
                   "                                 Выберите скин"]
-    design(intro_text, width, height, screen)
+    design(intro_text, width, height, screen, None)
     font = pygame.font.Font(None, 50)
     skin1 = pygame.transform.scale(load_image('mc_image.png', -1), (200, 200))
     skin2 = pygame.transform.scale(load_image('mc_image2.png', -1), (200, 200))
     skin3 = pygame.transform.scale(load_image('mc_image3.png', -1), (200, 200))
     skin = None
+    level = None
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -73,37 +96,71 @@ def start_screen(width, height, screen):
                             string_rendered = font.render(intro_text[-1], 1, pygame.Color((250, 0, 0)))
                             intro_rect = string_rendered.get_rect()
                             intro_rect.x = 20
-                            intro_rect.y = 290
+                            intro_rect.y = 240
                             screen.blit(string_rendered, intro_rect)
-                        else:
+                        if level is None or level == 0:
+                            screen.blit(font.render('Выберите уровень сложности', True, (250, 0, 0)), (200, 500))
+                            level = 0
+                        if level > 0 and skin is not None:
                             time.sleep(0.3)
-                            return skin
-                    if 100 < x < 300 and 380 < y < 525:
-                        design(intro_text, width, height, screen)
-                        pygame.draw.rect(screen, (180, 0, 180), rect=(100, 380, 200, 200))
-                        pygame.draw.rect(screen, (0, 0, 0), rect=(102, 382, 196, 196))
-                        screen.blit(skin1, (100, 380))
+                            return skin, level
+                    if 110 < x < 290 < y < 470:
+                        design(intro_text, width, height, screen, level)
+                        pygame.draw.rect(screen, (180, 0, 180), rect=(110, 290, 180, 180))
+                        pygame.draw.rect(screen, (0, 0, 0), rect=(112, 292, 176, 176))
+                        screen.blit(skin1, (100, 280))
                         skin = 'mc_image.png'
 
-                    if 350 < x < 550 and 380 < y < 525:
-                        design(intro_text, width, height, screen)
-                        pygame.draw.rect(screen, (180, 0, 180), rect=(350, 380, 200, 200))
-                        pygame.draw.rect(screen, (0, 0, 0), rect=(352, 382, 196, 196))
-                        screen.blit(skin2, (350, 380))
+                    if 360 < x < 540 and 290 < y < 470:
+                        design(intro_text, width, height, screen, level)
+                        pygame.draw.rect(screen, (180, 0, 180), rect=(360, 290, 180, 180))
+                        pygame.draw.rect(screen, (0, 0, 0), rect=(362, 292, 176, 176))
+                        screen.blit(skin2, (350, 280))
                         skin = 'mc_image2.png'
 
-                    if 600 < x < 800 and 380 < y < 525:
-                        design(intro_text, width, height, screen)
-                        pygame.draw.rect(screen, (180, 0, 180), rect=(600, 380, 200, 200))
-                        pygame.draw.rect(screen, (0, 0, 0), rect=(602, 382, 196, 196))
-                        screen.blit(skin3, (600, 380))
+                    if 610 < x < 790 and 290 < y < 470:
+                        design(intro_text, width, height, screen, level)
+                        pygame.draw.rect(screen, (180, 0, 180), rect=(610, 290, 180, 180))
+                        pygame.draw.rect(screen, (0, 0, 0), rect=(612, 292, 176, 176))
+                        screen.blit(skin3, (600, 280))
                         skin = 'mc_image3.png'
+
+                    if 170 < x < 310 and 570 < y < 610:
+                        level = 1
+                        pygame.draw.rect(screen, (100, 100, 100), rect=(170, 570, 140, 40))
+                        screen.blit(f.render('Легко', True, (250, 0, 200)), (205, 580))
+                        screen.blit(font.render('Выберите уровень сложности', True, (250, 100, 200)), (200, 500))
+                        pygame.draw.rect(screen, (180, 180, 180), rect=(370, 570, 170, 40))
+                        pygame.draw.rect(screen, (180, 180, 180), rect=(590, 570, 170, 40))
+                        screen.blit(f.render('Нормально', True, (250, 0, 200)), (390, 580))
+                        screen.blit(f.render('Тяжело', True, (250, 0, 200)), (630, 580))
+
+                    if 370 < x < 540 and 570 < y < 610:
+                        level = 2
+                        pygame.draw.rect(screen, (100, 100, 100), rect=(370, 570, 170, 40))
+                        screen.blit(f.render('Нормально', True, (250, 0, 200)), (390, 580))
+                        screen.blit(font.render('Выберите уровень сложности', True, (250, 100, 200)), (200, 500))
+                        pygame.draw.rect(screen, (180, 180, 180), rect=(170, 570, 140, 40))
+                        pygame.draw.rect(screen, (180, 180, 180), rect=(590, 570, 170, 40))
+                        screen.blit(f.render('Легко', True, (250, 0, 200)), (205, 580))
+                        screen.blit(f.render('Тяжело', True, (250, 0, 200)), (630, 580))
+
+                    if 590 < x < 760 and 570 < y < 610:
+                        level = 3
+                        pygame.draw.rect(screen, (100, 100, 100), rect=(590, 570, 170, 40))
+                        screen.blit(f.render('Тяжело', True, (250, 0, 200)), (630, 580))
+                        screen.blit(font.render('Выберите уровень сложности', True, (250, 100, 200)), (200, 500))
+                        pygame.draw.rect(screen, (180, 180, 180), rect=(170, 570, 140, 40))
+                        pygame.draw.rect(screen, (180, 180, 180), rect=(370, 570, 170, 40))
+                        screen.blit(f.render('Легко', True, (250, 0, 200)), (205, 580))
+                        screen.blit(f.render('Нормально', True, (250, 0, 200)), (390, 580))
+
         pygame.display.flip()
 
 
-def final_screen(width, height, screen, score):
+def final_screen(width, height, screen, score, username, record_score, total):
     intro_text = ["             Вы проиграли", "",
-                  f"                Ваш счёт: {score}"]
+                  f"              Ваш счёт: {score}"]
     y = 150
     fon = pygame.transform.scale(load_image('background.jpg'), (width, height))
     screen.blit(fon, (0, 0))
@@ -134,7 +191,7 @@ def final_screen(width, height, screen, score):
                 if event.button == pygame.BUTTON_LEFT:
                     x, y = event.pos
                     if 200 <= x <= 340 and 650 <= y <= 700:
-                        return True
+                        return username, record_score, total
                     if 570 <= x <= 710 and 650 <= y <= 700:
                         terminate()
         pygame.display.flip()
@@ -143,3 +200,82 @@ def final_screen(width, height, screen, score):
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def info(username):
+    con = sqlite3.connect('users.db')
+    cur = con.cursor()
+    result = cur.execute("""SELECT user FROM Users """).fetchall()
+    if username not in [i[0] for i in result]:
+        request = f"""INSERT INTO Users(user,score,total) VALUES('{username}', 0, 0)"""
+        cur.execute(request)
+        con.commit()
+    result = cur.execute(f"""SELECT score, total FROM Users where user = '{username}' """).fetchall()
+    con.close()
+    return result[0][0], result[0][1]
+
+
+def login():
+    size = width, height = 900, 800
+    screen = pygame.display.set_mode(size)
+    clock = pygame.time.Clock()
+    fon = pygame.transform.scale(load_image('background.jpg'), (width, height))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.SysFont(None, 100)
+    f = pygame.font.Font(None, 55)
+    f_blast_zone = pygame.font.Font(None, 65)
+    blast_zone = f_blast_zone.render('BLAST ZONE', True, (250, 30, 130))
+    username = ""
+    limit = True
+    active_input = False
+    empty = False
+
+    while True:
+        screen.blit(fon, (0, 0))
+        screen.blit(blast_zone, (300, 30))
+        if empty:
+            text1 = f.render('Введите ваше имя', True, (255, 0, 0))
+        else:
+            text1 = f.render('Введите ваше имя', True, (255, 50, 150))
+        screen.blit(text1, (260, 100))
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == pygame.BUTTON_LEFT:
+                    x, y = event.pos
+                    if 100 < x < 800 and 250 < y < 350:
+                        active_input = not active_input
+                    elif 360 < x < 540 and 550 < y < 620:
+                        if not username:
+                            empty = True
+                        else:
+                            score, total = info(username)
+                            time.sleep(0.5)
+                            return username, score, total
+                    else:
+                        active_input = False
+
+            elif event.type == pygame.KEYDOWN and active_input:
+                if event.key == pygame.K_BACKSPACE:
+                    username = username[:-1]
+                    if len(username) < 12:
+                        limit = True
+                else:
+                    if limit:
+                        username += event.unicode
+                        empty = False
+        if active_input:
+            pygame.draw.rect(screen, (150, 150, 150), rect=(100, 250, 700, 100))
+        else:
+            pygame.draw.rect(screen, (100, 100, 100), rect=(100, 250, 700, 100))
+        if len(username) == 12:
+            limit = False
+            screen.blit(f.render('Максимальное число символов: 12', True, (250, 0, 0)), (120, 400))
+
+        text_surf = font.render(username, True, (255, 50, 150))
+        screen.blit(text_surf, text_surf.get_rect(center=(450, 300)))
+        pygame.draw.rect(screen, (150, 150, 150), rect=(360, 550, 180, 70))
+        screen.blit(f.render('Войти', True, (255, 50, 150)), (390, 568))
+        pygame.display.flip()
