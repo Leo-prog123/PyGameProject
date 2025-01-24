@@ -159,13 +159,29 @@ def start_screen(width, height, screen):
 
 
 def final_screen(width, height, screen, score, username, record_score, total):
-    intro_text = ["             Вы проиграли", "",
-                  f"              Ваш счёт: {score}"]
-    y = 150
+    con = sqlite3.connect('users.db')
+    cur = con.cursor()
+    request = f"""UPDATE Users
+            SET score = '{record_score}',
+            total = '{total}'
+            WHERE user = '{username}'"""
+    cur.execute(request)
+    con.commit()
+    con.close()
     fon = pygame.transform.scale(load_image('background.jpg'), (width, height))
     screen.blit(fon, (0, 0))
+    f_blast_zone = pygame.font.Font(None, 65)
+    blast_zone = f_blast_zone.render('BLAST ZONE', True, (250, 30, 130))
+    screen.blit(blast_zone, (300, 30))
     font = pygame.font.Font(None, 90)
-    text_coord = 50
+    lose_text = font.render("Вы проиграли", True, (250, 100, 200))
+    screen.blit(lose_text, lose_text.get_rect(center=(450, 200)))
+    score_text = f_blast_zone.render(f"Cчёт: {score}", True,(250, 100, 200))
+    screen.blit(score_text, score_text.get_rect(center=(450, 300)))
+    record_text = f_blast_zone.render(f"Рекорд: {record_score}", True, (250, 100, 200))
+    screen.blit(record_text, record_text.get_rect(center=(450, 380)))
+    total_text = f_blast_zone.render(f"Общий счёт: {total}", True, (250, 100, 200))
+    screen.blit(total_text, total_text.get_rect(center=(450, 460)))
     pygame.draw.rect(screen, (180, 180, 180), rect=(200, 650, 140, 50))
     pygame.draw.rect(screen, (180, 180, 180), rect=(570, 650, 140, 50))
     f = pygame.font.Font(None, 36)
@@ -173,16 +189,6 @@ def final_screen(width, height, screen, score, username, record_score, total):
     text_exit = f.render('ВЫЙТИ', True, (250, 0, 250))
     screen.blit(text_restart, (215, 665))
     screen.blit(text_exit, (595, 663))
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color((250, 100, 200)))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 0
-        y += 40
-        intro_rect.y = y
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -191,7 +197,7 @@ def final_screen(width, height, screen, score, username, record_score, total):
                 if event.button == pygame.BUTTON_LEFT:
                     x, y = event.pos
                     if 200 <= x <= 340 and 650 <= y <= 700:
-                        return username, record_score, total
+                        return
                     if 570 <= x <= 710 and 650 <= y <= 700:
                         terminate()
         pygame.display.flip()

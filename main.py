@@ -128,8 +128,8 @@ def main(username, record_score, total):
 
             if not mc.alive or durability == 0:
                 time.sleep(1)
-                if final_screen(width, height, screen, score, username, record_score, total):
-                    main(username, record_score, total)
+                final_screen(width, height, screen, score, username, record_score, total + score)
+                main(username, record_score, total+score)
             pygame.display.flip()
 
 
