@@ -31,6 +31,8 @@ def main(username, record_score, total):
 
     text_pause1 = f.render('ПАУЗА', True, (180, 0, 0))
     text_pause2 = f.render('SPACE', True, (180, 0, 0))
+    text_exit1 = f.render('ВЫЙТИ', True, (180, 0, 0))
+    text_exit2 = f.render('ESC', True, (180, 0, 0))
     text_durability1 = 'ПРОЧНОСТЬ'
 
     background = pygame.transform.scale(load_image('background.jpg'), (800, 800))
@@ -60,6 +62,8 @@ def main(username, record_score, total):
                     k_s = True
                 if event.key == pygame.K_SPACE:
                     pause = not pause
+                if event.key == pygame.K_ESCAPE:
+                    mc.alive = False
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
                     k_a = False
@@ -107,6 +111,8 @@ def main(username, record_score, total):
             screen.blit(text2, text2.get_rect(center=(50, 90)))
             screen.blit(text_pause1, (10, 460))
             screen.blit(text_pause2, (10, 500))
+            screen.blit(text_exit1, (6, 550))
+            screen.blit(text_exit2, (25, 590))
             screen.blit(text_durability2, (20, 400))
             screen.blit(text_record_score1, (6, 700))
             screen.blit(text_record_score2, text_record_score2.get_rect(center=(50, 670)))
